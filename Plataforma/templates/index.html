@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Atendimento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+</head>
+<body>
+    <div class="d-flex" style="height: 100vh;">
+        
+        <!-- Sidebar -->
+        <div class="sidebar p-3 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0 text-truncate" style="font-size: 1rem;">Atendente: <strong>{{ user_name }}</strong></h5>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm" title="Sair"><i class="bi bi-box-arrow-right"></i></a>
+            </div>
+            <hr class="my-2">
+            
+            <!-- Abas de Navegação -->
+            <ul class="nav nav-tabs nav-fill mb-3" id="sidebar-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-conversations-tab" data-bs-toggle="tab" data-bs-target="#active-conversations" type="button" role="tab" aria-controls="active-conversations" aria-selected="true">Ativas</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-contacts-tab" data-bs-toggle="tab" data-bs-target="#all-contacts" type="button" role="tab" aria-controls="all-contacts" aria-selected="false">Contatos</button>
+                </li>
+            </ul>
+
+            <!-- Conteúdo das Abas -->
+            <div class="tab-content flex-grow-1" id="sidebar-tab-content" style="overflow-y: auto;">
+                <!-- Aba de Conversas Ativas -->
+                <div class="tab-pane fade show active" id="active-conversations" role="tabpanel" aria-labelledby="active-conversations-tab">
+                    <div class="input-group mb-3">
+                        <input type="text" id="conversation-search" class="form-control" placeholder="Pesquisar conversa...">
+                    </div>
+                    <div id="conversation-list" class="list-group">
+                        <p class="text-center text-muted">Carregando...</p>
+                    </div>
+                </div>
+                <!-- Aba de Todos os Contatos -->
+                <div class="tab-pane fade" id="all-contacts" role="tabpanel" aria-labelledby="all-contacts-tab">
+                    <div class="input-group mb-3">
+                        <input type="text" id="contact-search" class="form-control" placeholder="Pesquisar contato salvo...">
+                    </div>
+                    <div id="contact-list" class="list-group">
+                        <p class="text-center text-muted">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-success btn-sm mt-3 w-100" data-bs-toggle="modal" data-bs-target="#startNewConversationModal">
+                <i class="bi bi-plus-circle"></i> Iniciar Nova Conversa
+            </button>
+        </div>
+
+        <!-- Área do Chat -->
+        <div class="chat-area">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h3 id="chat-header" class="h5 mb-0 text-truncate">Selecione uma conversa</h3>
+                <button id="close-conversation-btn" class="btn btn-warning btn-sm" style="display: none;" title="Devolve o atendimento para o Robô">
+                    <i class="bi bi-robot"></i> Encerrar Atendimento
+                </button>
+            </div>
+            <div id="chat-window">
+                <div class="alert alert-info m-3">As mensagens aparecerão aqui.</div>
+            </div>
+            
+            <emoji-picker class="light" style="display: none; width: 100%; height: 250px;"></emoji-picker>
+
+            <form id="message-form" class="p-3 border-top bg-light" style="display: none;">
+                <div class="input-group">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Mensagens Rápidas">
+                            <i class="bi bi-chat-quote"></i>
+                        </button>
+                        <ul class="dropdown-menu" id="ready-messages-list">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createReadyMessageModal"><i class="bi bi-plus-lg"></i> Criar Nova...</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                        </ul>
+                    </div>
+                    <button type="button" id="emoji-btn" class="btn btn-outline-secondary" title="Emojis"><i class="bi bi-emoji-smile"></i></button>
+                    
+                    <input type="file" id="media-input" style="display: none;" accept="image/*,video/*,audio/*,application/pdf">
+                    <button type="button" id="attach-btn" class="btn btn-outline-secondary" title="Anexar Mídia"><i class="bi bi-paperclip"></i></button>
+
+                    <input type="text" id="message-input" class="form-control" placeholder="Digite sua mensagem..." autocomplete="off">
+                    
+                    <button type="submit" id="send-btn" class="btn btn-primary" title="Enviar"><i class="bi bi-send"></i></button>
+
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Criar Mensagem Pronta -->
+    <div class="modal fade" id="createReadyMessageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Criar Nova Mensagem Rápida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="readyMessageName" class="form-label">Nome da Mensagem (Apelido):</label>
+                        <input type="text" class="form-control" id="readyMessageName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="readyMessageContent" class="form-label">Conteúdo da Mensagem:</label>
+                        <textarea class="form-control" id="readyMessageContent" rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveReadyMessageBtn">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Iniciar Nova Conversa -->
+    <div class="modal fade" id="startNewConversationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Iniciar Nova Conversa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newContactNumber" class="form-label">Número do WhatsApp (DDI+DDD+Num):</label>
+                        <input type="text" class="form-control" id="newContactNumber" placeholder="Ex: 5561999998888" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newInitialMessage" class="form-label">Mensagem Inicial:</label>
+                        <textarea class="form-control" id="newInitialMessage" rows="3">Olá! Entrando em contato da Casa de Madeira. Como posso ajudar?</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="sendNewConversationBtn">Iniciar e Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <!-- <<< MODAL PARA LEGENDA DE MÍDIA >>> -->
+    <div class="modal fade" id="mediaCaptionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enviar Mídia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="media-preview" class="mb-3 text-center">
+                        <!-- A pré-visualização da mídia aparecerá aqui -->
+                    </div>
+                    <div class="mb-3">
+                        <label for="mediaCaptionInput" class="form-label">Legenda (opcional):</label>
+                        <textarea class="form-control" id="mediaCaptionInput" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="sendMediaBtn">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

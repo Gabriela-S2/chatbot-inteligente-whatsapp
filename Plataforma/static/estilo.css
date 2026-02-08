@@ -1,0 +1,63 @@
+html, body { 
+    height: 100%; 
+    overflow: hidden; /* Evita barras de rolagem no corpo da página */
+}
+
+.sidebar { 
+    min-width: 350px; 
+    max-width: 350px; 
+    border-right: 1px solid #dee2e6; 
+    display: flex; 
+    flex-direction: column; 
+    /* A altura é controlada pelo container flex pai, não precisa de height: 100vh */
+}
+
+.chat-area { 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    /* A altura também é controlada pelo container flex pai */
+}
+
+#conversation-list { 
+    flex-grow: 1; 
+    overflow-y: auto; /* Permite a rolagem apenas na lista de conversas */
+}
+
+#chat-window { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column-reverse; /* Mensagens aparecem de baixo para cima */
+    padding: 1rem; 
+}
+
+.chat-bubble { 
+    max-width: 70%; 
+    padding: 10px 15px; 
+    border-radius: 20px; 
+    margin-bottom: 10px; 
+    word-wrap: break-word; 
+}
+
+.inbound { 
+    background-color: #f1f0f0; 
+    align-self: flex-start; 
+}
+
+.outbound { 
+    background-color: #dcf8c6; 
+    align-self: flex-end; 
+}
+
+#message-form { 
+    padding: 1rem; 
+    border-top: 1px solid #dee2e6; 
+    background-color: #fff; 
+}
+
+.list-group-item.active {
+    background-color: #66db2fd2; /* Tom de verde um pouco mais escuro */
+    border-color: #b9d9ac;     /* Cor da borda para combinar */
+    color: #1a3c0d;            /* Cor do texto para garantir bom contraste */
+}
