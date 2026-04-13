@@ -27,7 +27,7 @@ Antes de começar, você precisará das seguintes contas e chaves de API:
 
 1. **Clone o repositório:**
 ```bash
-git clone https://github.com/SEU_USUARIO/chatbot-atendimento.git
+git clone https://github.com/Gabriela-S2/chatbot-inteligente-whatsapp.git
 cd chatbot-atendimento
 
 ```
